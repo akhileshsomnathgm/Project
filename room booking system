@@ -1,0 +1,182 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+class Room {
+private:
+    int roomNumber;
+    string roomType;
+    bool isAvailable;
+
+public:
+    Room(int number, string type) : roomNumber(number), roomType(type), isAvailable(true) {}
+
+    int getRoomNumber() const {
+        return roomNumber;
+    }
+
+    string getRoomType() const {
+        return roomType;
+    }
+
+    bool getAvailability() const {
+        return isAvailable;
+    }
+
+    void setAvailability(bool availability) {
+        isAvailable = availability;
+    }
+};
+
+class Booking {
+private:
+    int bookingId;
+    int roomNumber;
+    string guestName;
+    int durationDays;
+    bool isCancelled;
+
+public:
+    Booking(int id, int roomNum, string name, int duration) 
+        : bookingId(id), roomNumber(roomNum), guestName(name), durationDays(duration), isCancelled(false) {}
+
+    int getBookingId() const {
+        return bookingId;
+    }
+
+    int getRoomNumber() const {
+        return roomNumber;
+    }
+
+    string getGuestName() const {
+        return guestName;
+    }
+
+    int getDurationDays() const {
+        return durationDays;
+    }
+
+    bool getCancelled() const {
+        return isCancelled;
+    }
+
+    void cancelBooking() {
+        isCancelled = true;
+    }
+};
+
+class Hotel {
+private:
+    vector<Room> rooms;
+    vector<Booking> bookings;
+    int nextBookingId;
+
+public:
+    Hotel() : nextBookingId(1) {}
+
+    void addRoom(int number, string type) {
+        rooms.push_back(Room(number, type));
+    }
+
+    void listRooms() {
+        cout << "Room Number | Room Type | Availability\n";
+        for (const auto& room : rooms) {
+            cout << room.getRoomNumber() << " | " << room.getRoomType() 
+                 << " | " << (room.getAvailability() ? "Available" : "Occupied") << "\n";
+        }
+    }
+
+    void makeBooking(string guestName, int roomNumber, int durationDays) {
+        for (auto& room : rooms) {
+            if (room.getRoomNumber() == roomNumber && room.getAvailability()) {
+                room.setAvailability(false);
+                bookings.push_back(Booking(nextBookingId++, roomNumber, guestName, durationDays));
+                cout << "Booking successful! Your booking ID is " << nextBookingId - 1 << ".\n";
+                return;
+            }
+        }
+        cout << "Room not available.\n";
+    }
+
+    void cancelBooking(int bookingId) {
+        for (auto& booking : bookings) {
+            if (booking.getBookingId() == bookingId && !booking.getCancelled()) {
+                booking.cancelBooking();
+                for (auto& room : rooms) {
+                    if (room.getRoomNumber() == booking.getRoomNumber()) {
+                        room.setAvailability(true);
+                        break;
+                    }
+                }
+                cout << "Booking cancelled successfully.\n";
+                return;
+            }
+        }
+        cout << "Invalid booking ID or booking already cancelled.\n";
+    }
+
+    void displayBookings() {
+        cout << "Booking ID | Room Number | Guest Name | Duration | Status\n";
+        for (const auto& booking : bookings) {
+            cout << booking.getBookingId() << " | " << booking.getRoomNumber() << " | " 
+                 << booking.getGuestName() << " | " << booking.getDurationDays() << " | "
+                 << (booking.getCancelled() ? "Cancelled" : "Active") << "\n";
+        }
+    }
+};
+
+int main() {
+    Hotel hotel;
+    hotel.addRoom(101, "Single");
+    hotel.addRoom(102, "Double");
+    hotel.addRoom(103, "Suite");
+
+    int choice;
+    do {
+        cout << "\nHotel Management System\n";
+        cout << "1. List Rooms\n";
+        cout << "2. Make a Booking\n";
+        cout << "3. Cancel a Booking\n";
+        cout << "4. Display Bookings\n";
+        cout << "5. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                hotel.listRooms();
+                break;
+            case 2: {
+                string name;
+                int roomNumber, duration;
+                cout << "Enter guest name: ";
+                cin >> name;
+                cout << "Enter room number: ";
+                cin >> roomNumber;
+                cout << "Enter duration of stay (days): ";
+                cin >> duration;
+                hotel.makeBooking(name, roomNumber, duration);
+                break;
+            }
+            case 3: {
+                int bookingId;
+                cout << "Enter booking ID to cancel: ";
+                cin >> bookingId;
+                hotel.cancelBooking(bookingId);
+                break;
+            }
+            case 4:
+                hotel.displayBookings();
+                break;
+            case 5:
+                cout << "Exiting the system.\n";
+                break;
+            default:
+                cout << "Invalid choice! Please try again.\n";
+        }
+    } while (choice != 5);
+
+    return 0;
+}
+room booking
